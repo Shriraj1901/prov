@@ -77,11 +77,7 @@ def test_valid_direction_is_preserved() -> None:
 
 def test_use_labels_with_explicit_label_differing_from_identifier() -> None:
     """Covers the use_labels=True node-rendering branch (docs/test-gap-
-    checklist.md, T13 item under dot.py). The label==identifier branch
-    (dot.py:281-282) is unreachable via any real record: ProvRecord.label
-    always returns a plain `str`, while `.identifier` is a QualifiedName, and
-    `str.__eq__`/`QualifiedName.__eq__` can never consider the two equal --
-    confirmed empirically; left deferred (see checklist)."""
+    checklist.md, T13 item under dot.py)."""
     doc = ProvDocument()
     doc.add_namespace("ex", "http://example.org/")
     doc.entity("ex:e1", other_attributes={"prov:label": "My Entity"})
@@ -89,6 +85,21 @@ def test_use_labels_with_explicit_label_differing_from_identifier() -> None:
     dot = prov_to_dot(doc, use_labels=True)
     svg_content = dot.create(format="svg", encoding="utf-8")
     assert b"My Entity" in svg_content
+
+
+def test_node_without_label_shows_its_identifier_once() -> None:
+    doc = ProvDocument()
+    doc.add_namespace("ex", "http://example.org/")
+    doc.entity("ex:plain")
+    doc.entity("ex:named", other_attributes={"prov:label": "My Entity"})
+
+    dot = prov_to_dot(doc, use_labels=True, show_element_attributes=False)
+    labels = {node.get_name(): node.get_label() for node in dot.get_nodes()}
+
+    assert sorted(labels.values()) == [
+        '"ex:plain"',
+        '<My Entity<br /><font color="#333333" point-size="10">ex:named</font>>',
+    ]
 
 
 def test_show_element_attributes_false_skips_annotation() -> None:

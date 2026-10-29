@@ -342,7 +342,7 @@ def _add_node(
     state.node_count += 1
     node_id = f"n{state.node_count}"
     if state.use_labels:
-        if record.label == record.identifier:
+        if record.label == str(record.identifier):
             node_label = _quoted(str(record.label))
         else:
             # Fancier label if both are different. The label will be
